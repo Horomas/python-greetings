@@ -3,7 +3,7 @@ name: Deploy Python Greetings App
 inputs:
   environment:
     required: true
-    description: Target environment: dev, stg, or prod
+    description: "Target environment: dev, stg, or prod"
   dockerhub_username:
     required: true
     description: Docker Hub username
