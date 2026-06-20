@@ -1,0 +1,23 @@
+name: Build and Push Python Greetings Docker Image
+
+description: Build python-greetings-app image and push it to Docker Hub
+
+inputs:
+  dockerhub_username:
+    required: true
+    description: Docker Hub username
+
+runs:
+  using: composite
+  steps:
+    - name: Build Python greetings Docker image
+      shell: bash
+      run: |
+        echo "Building Python microservice Docker image..."
+        docker build -t ${{ inputs.dockerhub_username }}/python-greetings-app:latest .
+
+    - name: Push Python greetings Docker image
+      shell: bash
+      run: |
+        echo "Pushing Python microservice Docker image to Docker Hub..."
+        docker push ${{ inputs.dockerhub_username }}/python-greetings-app:latest

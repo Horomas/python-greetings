@@ -1,0 +1,23 @@
+name: Deploy Python Greetings App
+
+inputs:
+  environment:
+    required: true
+    description: Target environment: dev, stg, or prod
+  dockerhub_username:
+    required: true
+    description: Docker Hub username
+
+runs:
+  using: composite
+  steps:
+    - name: Deploy service
+      shell: bash
+      run: |
+        echo "Deploying Python microservice to ${{ inputs.environment }} environment..."
+
+        docker pull ${{ inputs.dockerhub_username }}/python-greetings-app:latest
+
+        docker compose stop greetings-app-${{ inputs.environment }} || true
+        docker compose rm -f greetings-app-${{ inputs.environment }} || true
+        docker compose up -d greetings-app-${{ inputs.environment }}

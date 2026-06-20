@@ -1,0 +1,21 @@
+name: Test Python Greetings App
+
+inputs:
+  environment:
+    required: true
+    description: Target environment: dev, stg, or prod
+  dockerhub_username:
+    required: true
+    description: Docker Hub username
+
+runs:
+  using: composite
+  steps:
+    - name: Run API tests
+      shell: bash
+      run: |
+        echo "Running API tests on ${{ inputs.environment }} environment..."
+
+        docker pull ${{ inputs.dockerhub_username }}/api-tests:latest
+
+        docker run --network=host --rm ${{ inputs.dockerhub_username }}/api-tests:latest run greetings greetings_${{ inputs.environment }}

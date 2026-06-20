@@ -1,0 +1,110 @@
+name: Python Greetings Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-docker-image:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout python-greetings repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: ./.github/actions/build
+        with:
+          dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
+          
+  deploy-to-dev:
+    runs-on: self-hosted
+    needs: [build-docker-image]
+
+    steps:
+      - name: Checkout python-greetings repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to DEV
+        uses: ./.github/actions/deploy
+        with:
+          environment: dev
+          dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
+
+  tests-on-dev:
+    runs-on: self-hosted
+    needs: [deploy-to-dev]
+
+    steps:
+      - name: Checkout python-greetings repository
+        uses: actions/checkout@v4
+
+      - name: Run tests on DEV
+        uses: ./.github/actions/test
+        with:
+          environment: dev
+          dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
+
+  deploy-to-stg:
+    runs-on: self-hosted
+    needs: [tests-on-dev]
+
+    steps:
+      - name: Checkout python-greetings repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to STG
+        uses: ./.github/actions/deploy
+        with:
+          environment: stg
+          dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
+
+  tests-on-stg:
+    runs-on: self-hosted
+    needs: [deploy-to-stg]
+
+    steps:
+      - name: Checkout python-greetings repository
+        uses: actions/checkout@v4
+
+      - name: Run tests on STG
+        uses: ./.github/actions/test
+        with:
+          environment: stg
+          dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
+
+  deploy-to-prod:
+    runs-on: self-hosted
+    needs: [tests-on-stg]
+
+    steps:
+      - name: Checkout python-greetings repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to PROD
+        uses: ./.github/actions/deploy
+        with:
+          environment: prod
+          dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
+
+  tests-on-prod:
+    runs-on: self-hosted
+    needs: [deploy-to-prod]
+
+    steps:
+      - name: Checkout python-greetings repository
+        uses: actions/checkout@v4
+
+      - name: Run tests on PROD
+        uses: ./.github/actions/test
+        with:
+          environment: prod
+          dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
